@@ -1,34 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Common.Network;
 
-namespace Common.Network
+namespace Common.Packets
 {
     /// <summary>
     /// TODO: Implement this https://github.com/RajanGrewal/ByteBuffer
     /// </summary>
     public class COutPacket : IDisposable
     {
-        public const int DefaultBufferSize = 1024;
-
         private MemoryStream m_stream;
         private bool m_disposed;
 
-        public COutPacket(int bufferSize = DefaultBufferSize)
+        public COutPacket()
         {
-            m_stream = new MemoryStream(DefaultBufferSize);
+            m_stream = new MemoryStream(1024);
             m_disposed = false;
         }
-
         public COutPacket(SendOps opCode) : this()
         {
             Encode2((short)opCode);
         }
-
-
+       
         //From LittleEndianByteConverter by Shoftee
         private void Append(long value, int byteCount)
         {
@@ -47,7 +40,7 @@ namespace Common.Network
         public void Encode1(bool value)
         {
             ThrowIfDisposed();
-            var x = (byte) (value ? 1 : 0);
+            var x = (byte)(value ? 1 : 0);
             m_stream.WriteByte(x);
         }
         public void Encode2(short value)
@@ -74,12 +67,35 @@ namespace Common.Network
         {
             ThrowIfDisposed();
 
-            Append(value.Length,2);
-            
+            Append(value.Length, 2);
+
             foreach (char c in value)
                 Append(c, 1);
         }
-        
+        public void EncodeFixedString(string value,int count)
+        {
+            ThrowIfDisposed();
+            
+            for (int i = 0; i < count; i++)
+            {
+                if (i < value.Length)
+                {
+                    Encode1((byte)value[i]);
+                }
+                else
+                {
+                    Encode1(0);
+                }
+            }
+        }
+
+        public void Skip(int count)
+        {
+            ThrowIfDisposed();
+            var value = new byte[count];
+            m_stream.Write(value, 0, value.Length);
+        }
+
         public byte[] ToArray()
         {
             ThrowIfDisposed();
@@ -97,10 +113,7 @@ namespace Common.Network
         public void Dispose()
         {
             m_disposed = true;
-
-            if (m_stream != null)
-                m_stream.Dispose();
-
+            m_stream?.Dispose();
             m_stream = null;
         }
     }

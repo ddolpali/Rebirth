@@ -31,42 +31,72 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="reWZ, Version=1.1.6.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\Character.cs" />
+    <Compile Include="Entities\AvatarData.cs" />
     <Compile Include="Client\ClientBase.cs" />
+    <Compile Include="Entities\AvatarLook.cs" />
+    <Compile Include="Entities\CharacterData.cs" />
+    <Compile Include="Entities\GW_Item.cs" />
+    <Compile Include="Entities\MapPos.cs" />
+    <Compile Include="Entities\ExtendSP.cs" />
+    <Compile Include="Entities\GW_CharacterStat.cs" />
+    <Compile Include="Client\WvsGameClient.cs" />
     <Compile Include="Client\WvsLoginClient.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Crypto\FastAES.cs" />
-    <Compile Include="Crypto\MapleAes.cs" />
-    <Compile Include="Crypto\MapleCustom.cs" />
-    <Compile Include="Crypto\MapleIV.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Game\CField.cs" />
+    <Compile Include="Game\CFootholdMan.cs" />
+    <Compile Include="Game\CMob.cs" />
+    <Compile Include="Game\CLife.cs" />
+    <Compile Include="Game\CMobPool.cs" />
+    <Compile Include="Game\CNpc.cs" />
+    <Compile Include="Game\CNpcPool.cs" />
+    <Compile Include="Game\CObjectPool.cs" />
+    <Compile Include="Game\CPortalMan.cs" />
+    <Compile Include="Game\Foothold.cs" />
+    <Compile Include="Game\Portal.cs" />
+    <Compile Include="Network\Crypto\FastAES.cs" />
+    <Compile Include="Network\Crypto\MapleAes.cs" />
+    <Compile Include="Network\Crypto\Shanda.cs" />
+    <Compile Include="Network\Crypto\MapleIV.cs" />
     <Compile Include="Entities\CrashCallType.cs" />
     <Compile Include="Log\ConsoleLog.cs" />
     <Compile Include="Log\Logger.cs" />
-    <Compile Include="Network\CInPacket.cs" />
-    <Compile Include="Network\COutPacket.cs" />
+    <Compile Include="Packets\CInPacket.cs" />
+    <Compile Include="Packets\COutPacket.cs" />
     <Compile Include="Network\CClientSocket.cs" />
-    <Compile Include="Network\OpCodes.cs" />
+    <Compile Include="Packets\OpCodes.cs" />
     <Compile Include="Network\CAcceptor.cs" />
-    <Compile Include="Network\TcpHelp.cs" />
-    <Compile Include="Network\CPacket.cs" />
+    <Compile Include="Network\CSockHelp.cs" />
+    <Compile Include="Packets\CPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Provider\WzConstant.cs" />
+    <Compile Include="Provider\WzManager.cs" />
+    <Compile Include="Scripts\Npc\Npc9900000.cs" />
+    <Compile Include="Scripts\Npc\NpcDefault.cs" />
+    <Compile Include="Scripts\Npc\NpcDialogOptions.cs" />
+    <Compile Include="Scripts\Npc\NpcScript.cs" />
+    <Compile Include="Scripts\Npc\Query\NpcActionResult.cs" />
     <Compile Include="Server\ServerBase.cs" />
     <Compile Include="Server\WvsCenter.cs" />
+    <Compile Include="Server\WvsGame.cs" />
     <Compile Include="Server\WvsLogin.cs" />
+    <Compile Include="TagPoint.cs" />
     <Compile Include="Threading\Executor.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Tools\" />
+    <ProjectReference Include="..\Database\Database.csproj">
+      <Project>{dc067824-84f0-4e45-a9a3-be590995e3a2}</Project>
+      <Name>Database</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Types\CField\" />
+    <Folder Include="Types\CLogin\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
-using Common.Crypto;
+using Common.Network.Crypto;
+using Common.Packets;
 
 namespace Common.Network
 {
@@ -15,7 +16,7 @@ namespace Common.Network
 
         private readonly Socket m_socket;
 
-        private byte[] m_recvBuffer;
+        private readonly byte[] m_recvBuffer;
         private byte[] m_buffer;
         private int m_offset;
 
@@ -23,16 +24,19 @@ namespace Common.Network
         private MapleIV m_siv;
         private MapleIV m_riv;
 
-        private object m_sendSync;
+        private readonly object m_sendSync;
 
         public string Host { get; set; }
         public bool Disposed { get; private set; }
+
+        public event Action<CInPacket> OnPacket;
+        public event Action OnDisconnected;
 
         public CClientSocket(Socket socket)
         {
             m_socket = socket;
 
-            Host = TcpHelp.SetSockOpt(ref m_socket);
+            Host = CSockHelp.SetSockOpt(ref m_socket);
             Disposed = false;
 
             m_recvBuffer = new byte[ReceiveSize];
@@ -45,11 +49,11 @@ namespace Common.Network
         //Eventually move this out of socket
         public void Initialize(ushort version)
         {
-            m_siv = new MapleIV(0xBADF00D);
-            m_riv = new MapleIV(0XDEADBEEF);
-
             m_version = version;
 
+            m_siv = new MapleIV(0xBADF00D);
+            m_riv = new MapleIV(0XDEADBEEF);
+            
             //m_siv = new MapleIV(0x52616A61); //Raja
             //m_riv = new MapleIV(0x6E523078); //nR0x
 
@@ -69,18 +73,13 @@ namespace Common.Network
 
             Receive();
         }
-
-        public event Action<CInPacket> OnPacket;
-        public event Action OnDisconnected;
-
+        
         internal void Receive()
         {
             if (Disposed)
                 return;
 
-            SocketError errorCode = SocketError.Success;
-
-            m_socket.BeginReceive(m_recvBuffer, 0, m_recvBuffer.Length, SocketFlags.None, out errorCode, EndReceive, null);
+            m_socket.BeginReceive(m_recvBuffer, 0, m_recvBuffer.Length, SocketFlags.None, out var errorCode, EndReceive, null);
 
             if (errorCode != SocketError.Success)
                 Dispose();
@@ -89,9 +88,7 @@ namespace Common.Network
         {
             if (!Disposed)
             {
-                SocketError errorCode = SocketError.Success;
-
-                int length = m_socket.EndReceive(ar, out errorCode);
+                int length = m_socket.EndReceive(ar, out var errorCode);
 
                 if (errorCode != SocketError.Success || length == 0)
                 {
@@ -115,7 +112,7 @@ namespace Common.Network
                 while (newSize < m_offset + length)
                     newSize *= 2;
 
-                Array.Resize<byte>(ref m_buffer, newSize);
+                Array.Resize(ref m_buffer, newSize);
             }
 
             Buffer.BlockCopy(m_recvBuffer, 0, m_buffer, m_offset, length);
@@ -124,6 +121,8 @@ namespace Common.Network
         }
         private void ManipulateBuffer()
         {
+            //Do we still want to handle a packet in the buffer
+            //even if the client has already disconnected?
             while (m_offset >= 4 && Disposed == false)
             {
                 int size = MapleAes.GetLength(m_buffer);
@@ -143,7 +142,7 @@ namespace Common.Network
                 Buffer.BlockCopy(m_buffer, 4, packetBuffer, 0, size);
 
                 MapleAes.Transform(packetBuffer, m_riv);
-                MapleCustom.DecryptTransform(packetBuffer);
+                Shanda.DecryptTransform(packetBuffer);
     
                 m_offset -= size + 4;
 
@@ -154,25 +153,24 @@ namespace Common.Network
 
                 OnPacket?.Invoke(new CInPacket(packetBuffer));
             }
-
         }
 
-        internal void Send(byte[] packet)
+        internal void SendPacket(byte[] packet)
         {
             if (Disposed)
                 return;
 
+            //TODO: Phase this lock out one day :^)
             lock (m_sendSync)
             {
                 if (Disposed)
                     return;
-
-                //byte[] packet = outPacket.ToArray();
+                
                 byte[] final = new byte[packet.Length + 4];
 
                 MapleAes.GetHeader(final, m_siv, m_version);
 
-                MapleCustom.EncryptTransform(packet);
+                Shanda.EncryptTransform(packet);
                 MapleAes.Transform(packet, m_siv);
 
                 Buffer.BlockCopy(packet, 0, final, 4, packet.Length);
@@ -186,8 +184,7 @@ namespace Common.Network
 
             while (offset < final.Length)
             {
-                SocketError errorCode = SocketError.Success;
-                int sent = m_socket.Send(final, offset, final.Length - offset, SocketFlags.None, out errorCode);
+                int sent = m_socket.Send(final, offset, final.Length - offset, SocketFlags.None, out var errorCode);
 
                 if (sent == 0 || errorCode != SocketError.Success)
                 {

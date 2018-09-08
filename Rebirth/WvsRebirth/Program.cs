@@ -7,13 +7,21 @@ namespace WvsRebirth
     {
         static void Main(string[] args)
         {
-            ConsoleLog.InitConsole("Rebirth v95");
-            Logger.Add(new ConsoleLog());
-            
-            WvsLogin x = new WvsLogin();
-            x.Start();
-            Console.ReadLine();
-            x.Stop();
+            var mapleSvc = new MapleService();
+
+            if (Environment.UserInteractive)
+            {
+                ConsoleLog.InitConsole("Rebirth v95");
+                Logger.Add(new ConsoleLog());
+                
+                mapleSvc.Start();
+                Console.ReadLine();
+                mapleSvc.Stop();
+            }
+            else
+            {
+                //TODO: Window Service Code
+            }
         }
     }
 }
