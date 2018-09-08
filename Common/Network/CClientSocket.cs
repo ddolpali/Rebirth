@@ -81,8 +81,8 @@ namespace Common.Network
 
             m_socket.BeginReceive(m_recvBuffer, 0, m_recvBuffer.Length, SocketFlags.None, out var errorCode, EndReceive, null);
             
-            //if (errorCode != SocketError.Success)
-                //Dispose();
+            if (errorCode != SocketError.Success && errorCode != SocketError.IOPending)
+                Dispose();
         }
         private void EndReceive(IAsyncResult ar)
         {
