@@ -9,7 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Log\" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0-preview1-35029" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PKG1\PKG1.csproj" />
   </ItemGroup>
 
 </Project>

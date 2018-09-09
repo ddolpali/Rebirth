@@ -3,24 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Common.Provider;
+using Common.Log;
+using Microsoft.Extensions.Configuration;
+using PKG1;
 using WvsRebirth;
 
 namespace Common.Server
 {
     public class WvsCenter
     {
-        private readonly WzManager m_wzMan;
-
         private readonly WvsLogin m_login;
         private readonly WvsGame[] m_games;
 
-        public WzManager WzMan => m_wzMan;
+        public readonly PackageCollection WzProvider;
+
+        public static IConfiguration config;
 
         public WvsCenter(int channels)
         {
-            //m_wzMan = new WzManager();
-            //m_wzMan.LoadFile("Map.wz");
+            config = new ConfigurationBuilder()
+                .AddJsonFile("Global.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            WZReader.InitializeKeys();
+
+            WzProvider = new PackageCollection(Constants.WzLocation);
 
             m_login = new WvsLogin(this);
             m_games = new WvsGame[channels];

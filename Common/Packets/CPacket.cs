@@ -169,7 +169,7 @@ namespace Common.Packets
 
             var ip = new byte[] { 127, 0, 0, 1 };
             p.EncodeBuffer(ip, 0, ip.Length);
-            p.Encode2(Constants.GamePort);
+            p.Encode2((short)Constants.GamePort);
             p.Encode4(uid);
             p.Encode1(0);
             p.Encode4(0);

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Common.Provider;
 using Common.Server;
-//using reWZ.WZProperties;
+using PKG1;
+using PKG1;
 
 namespace Common.Game
 {
@@ -42,30 +42,34 @@ namespace Common.Game
 
                 Portals.Add(p);
             }
-        }
-        public void Load(WZObject mapNode)
+        }*/
+        public void Load(WZProperty mapNode)
         {
-            var portals = mapNode["portal"];
+            var portals = mapNode.Resolve("portal").Children;
 
-            foreach (WZObject x in portals)
+            foreach (WZProperty x in portals)
             {
-                var p = new Portal
+                var p = new Portal();
+                p.nIdx = Convert.ToInt32(x.Name);
+                foreach (var portalChildNode in x.Children)
                 {
-                    nIdx = Convert.ToInt32(x.Name),
-                    sName = x["pn"].ValueOrDie<string>(),
-                    nType = x["pt"].ValueOrDie<int>(),
-                    nTMap = x["tm"].ValueOrDie<int>(),
-                    sTName = x["tn"].ValueOrDie<string>(),
-                    ptPos =
-                    {
-                        X = (short)x["x"].ValueOrDie<int>(),
-                        Y = (short)x["y"].ValueOrDie<int>()
-                    }
-                };
+                    if (portalChildNode.Name == "pn")
+                        p.sName = portalChildNode.ResolveForOrNull<string>();
+                    else if (portalChildNode.Name == "pt")
+                        p.nType = portalChildNode.ResolveFor<int>() ?? 0;
+                    else if (portalChildNode.Name == "tm")
+                        p.nTMap = portalChildNode.ResolveFor<short>() ?? 0;
+                    else if (portalChildNode.Name == "tn")
+                        p.sTName = portalChildNode.ResolveForOrNull<string>();
+                    else if (portalChildNode.Name == "x")
+                        p.ptPos.X = portalChildNode.ResolveFor<short>() ?? 0;
+                    else if (portalChildNode.Name == "y")
+                        p.ptPos.Y = portalChildNode.ResolveFor<short>() ?? 0;
+                }
 
                 Portals.Add(p);
             }
-        }*/
+        }
 
         public Portal GetByName(string name) => Portals.FirstOrDefault(p => p.sName == name);
 

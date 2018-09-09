@@ -11,7 +11,7 @@ namespace Common.Server
         private readonly ConcurrentQueue<Action> m_queue;
         private readonly Thread m_thread;
 
-        private string m_name;
+        private readonly string m_name;
         private bool m_started;
         private bool m_running;
 
@@ -24,10 +24,12 @@ namespace Common.Server
             m_event = new ManualResetEvent(false);
             m_queue = new ConcurrentQueue<Action>();
 
-            m_thread = new Thread(Work);
-            m_thread.IsBackground = false;
-            m_thread.Name = $"Executor {m_name}";
-            m_thread.Priority = ThreadPriority.AboveNormal;
+            m_thread = new Thread(Work)
+            {
+                IsBackground = false,
+                Name = $"Executor {m_name}",
+                Priority = ThreadPriority.AboveNormal
+            };
 
             m_started = false;
             m_running = true;

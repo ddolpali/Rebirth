@@ -91,21 +91,26 @@ namespace Common.Entities
 
         public static CharacterData Create(GW_CharacterStat stats, AvatarLook look)
         {
-            var x = new CharacterData();
-
-            x.Stats = stats;
-            x.Look = look;
-            x.Position = new MapPos();
+            var x = new CharacterData
+            {
+                Stats = stats,
+                Look = look,
+                Position = new MapPos()
+            };
 
             //----------
 
-            var v1 = new GW_ItemSlotBundle();
-            v1.nItemID = 2000007;
-            v1.nNumber = 5;
+            var v1 = new GW_ItemSlotBundle
+            {
+                nItemID = 2000007,
+                nNumber = 5
+            };
 
-            var v2 = new GW_ItemSlotBundle();
-            v2.nItemID = 2000010;
-            v2.nNumber = 500;
+            var v2 = new GW_ItemSlotBundle
+            {
+                nItemID = 2000010,
+                nNumber = 500
+            };
 
             x.aInvConsume.Add(1, v1);
             x.aInvConsume.Add(2, v2);

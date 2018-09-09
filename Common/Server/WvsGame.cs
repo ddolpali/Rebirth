@@ -28,9 +28,9 @@ namespace Common.Server
         {
             if (!CFieldMan.ContainsKey(id))
             {
-                //var field = CField.Load(id, ParentServer);
+                var field = CField.Load(id, ParentServer);
 
-                //CFieldMan.Add(id, field);
+                CFieldMan.Add(id, field);
             }
 
             return CFieldMan[id];

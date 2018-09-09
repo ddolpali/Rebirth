@@ -8,15 +8,15 @@ using Common.Entities;
 using Common.Log;
 using Common.Network;
 using Common.Packets;
-using Common.Provider;
 using Common.Server;
+using PKG1;
 
 namespace Common.Game
 {
     public sealed class CField
     {
 
-        private bool m_sentController = false; //TODO: rEMOVE THIS ONE DAY LOL
+        private readonly bool m_sentController = false; //TODO: rEMOVE THIS ONE DAY LOL
 
 
         public int MapId { get; }
@@ -119,17 +119,16 @@ namespace Common.Game
                 c.SendPacket(CPacket.NpcEnterField(npc));
             }
         }
-        /*
+        
         public static CField Load(int mapId, WvsCenter parentServer)
         {
-            var 
-            = parentServer.WzMan;
-            var wz = wzMan["Map.wz"];
-            var mapPath = $"Map/Map{mapId / 100000000}/{mapId}.img";
+            var WzProvider = parentServer.WzProvider;
+            var wz = "Map";
+            var path = $"Map/Map{mapId / 100000000}/{mapId}.img";
 
             try
             {
-                var mapNode = wz.ResolvePath(mapPath);
+                var mapNode = WzProvider.Resolve($"{wz}/{path}");
 
                 var cf = new CField(mapId);
                 cf.Load(mapNode);
@@ -139,9 +138,9 @@ namespace Common.Game
             {
                 return null;
             }
-        }*/
-        /*
-        private void Load(WZObject mapNode)//WzManager wzMan)
+        }
+        
+        private void Load(WZProperty mapNode)
         {
             Portals.Load(mapNode);
             Footholds.Load(mapNode);
@@ -149,6 +148,6 @@ namespace Common.Game
 
             Mobs.Load(mapNode);
             Mobs.DoMobLogic();
-        }*/
+        }
     }
 }

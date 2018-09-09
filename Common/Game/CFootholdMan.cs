@@ -1,10 +1,11 @@
-﻿using System;
+﻿using PKG1;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Common.Provider;
-//using reWZ.WZProperties;
+//using Common.Provider;
+using PKG1;
 
 namespace Common.Game
 {
@@ -46,35 +47,34 @@ namespace Common.Game
 
             }
         }*/
-        /*public void Load(WZObject mapNode)
+
+        public void Load(WZProperty mapNode)
         {
-            var footholds = mapNode["foothold"];
+            var footholds = mapNode.Resolve("foothold").Children;
 
-            foreach (WZObject wz1 in footholds)
+            foreach (WZProperty x in footholds)
             {
-                foreach (WZObject wz2 in wz1)
+                var f = new Foothold();
+                f.Id = Convert.ToInt32(x.Name);
+                foreach (var portalChildNode in x.Children)
                 {
-                    foreach (WZObject fh in wz2)
-                    {
-                        var f = new Foothold
-                        {
-                            Id = Convert.ToInt32(fh.Name),
-                            Next = fh["next"].ValueOrDie<int>(),
-                            Prev = fh["prev"].ValueOrDie<int>(),
-                            X1 = (short)fh["x1"].ValueOrDie<int>(),
-                            Y1 = (short)fh["y1"].ValueOrDie<int>(),
-                            X2 = (short)fh["x2"].ValueOrDie<int>(),
-                            Y2 = (short)fh["y2"].ValueOrDie<int>(),
-                        };
-
-                        Footholds.Add(f);
-                    }
+                    if (portalChildNode.Name == "next")
+                        f.Next = portalChildNode.ResolveFor<int>() ?? 0;
+                    else if (portalChildNode.Name == "prev")
+                        f.Prev = portalChildNode.ResolveFor<int>() ?? 0;
+                    else if (portalChildNode.Name == "x1")
+                        f.X1 = (short)(portalChildNode.ResolveFor<short>() ?? 0);
+                    else if (portalChildNode.Name == "y1")
+                        f.Y1 = (short)(portalChildNode.ResolveFor<int>() ?? 0);
+                    else if (portalChildNode.Name == "x2")
+                        f.X2 = (short)(portalChildNode.ResolveFor<short>() ?? 0);
+                    else if (portalChildNode.Name == "y2")
+                        f.Y2 = (short)(portalChildNode.ResolveFor<short>() ?? 0);
                 }
 
+                Footholds.Add(f);
             }
         }
-        */
-
 
         public Foothold FindBelow(TagPoint p)
         {

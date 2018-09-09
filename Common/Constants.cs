@@ -8,18 +8,20 @@ using Common.Client;
 using Common.Network;
 using Common.Packets;
 using Common.Scripts.Npc;
+using Common.Server;
 
 namespace Common
 {
     public static class Constants
     {
         public static Random Rand { get; } = new Random();
+        
+        public static string WzLocation = WvsCenter.config["Core:wz"];
 
-        public const ushort Version = 95;
+        public static ushort Version = (ushort)Int32.Parse(WvsCenter.config["Core:version"]);
 
-        public const int LoginPort = 8484;
-        public const int GamePort = 8585;
-
+        public static int LoginPort = Int32.Parse(WvsCenter.config["Login:port"]);
+        public static int GamePort = Int32.Parse(WvsCenter.config["Channel:port"]);
 
         public const long MAX_TIME = 150842304000000000L;
         public const long ZERO_TIME = 94354848000000000L;
@@ -27,7 +29,7 @@ namespace Common
 
         public static readonly long MaxTime = new DateTime(2040, 1, 1).ToFileTime();
 
-        public static readonly string[] Names = {"Rajan", "hontale", "LloydKorn"};
+        public static readonly string[] Names = {"quack"};
 
         public const string ServerMessage = @"8========D~~~";
 

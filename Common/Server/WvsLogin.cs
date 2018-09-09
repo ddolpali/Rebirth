@@ -12,7 +12,7 @@ namespace WvsRebirth
 {
     public class WvsLogin : ServerBase<WvsLoginClient>
     {   
-        public WvsLogin(WvsCenter parent) : base("WvsLogin", Constants.LoginPort,parent)
+        public WvsLogin(WvsCenter parent) : base("WvsLogin", Constants.LoginPort, parent)
         {
             //Eventually do something L0L
         }
