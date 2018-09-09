@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F9727663-7D7B-4A10-93D3-13FC26F9A230}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Common</RootNamespace>
+    <AssemblyName>Common</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="reWZ, Version=1.1.6.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Entities\AvatarData.cs" />
+    <Compile Include="Client\ClientBase.cs" />
+    <Compile Include="Entities\AvatarLook.cs" />
+    <Compile Include="Entities\CharacterData.cs" />
+    <Compile Include="Entities\GW_Item.cs" />
+    <Compile Include="Entities\MapPos.cs" />
+    <Compile Include="Entities\ExtendSP.cs" />
+    <Compile Include="Entities\GW_CharacterStat.cs" />
+    <Compile Include="Client\WvsGameClient.cs" />
+    <Compile Include="Client\WvsLoginClient.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Game\CField.cs" />
+    <Compile Include="Game\CFootholdMan.cs" />
+    <Compile Include="Game\CInventory.cs" />
+    <Compile Include="Game\CMob.cs" />
+    <Compile Include="Game\CLife.cs" />
+    <Compile Include="Game\CMobPool.cs" />
+    <Compile Include="Game\CNpc.cs" />
+    <Compile Include="Game\CNpcPool.cs" />
+    <Compile Include="Game\CObjectPool.cs" />
+    <Compile Include="Game\CPortalMan.cs" />
+    <Compile Include="Game\Foothold.cs" />
+    <Compile Include="Game\Portal.cs" />
+    <Compile Include="Network\Crypto\FastAES.cs" />
+    <Compile Include="Network\Crypto\MapleAes.cs" />
+    <Compile Include="Network\Crypto\Shanda.cs" />
+    <Compile Include="Network\Crypto\MapleIV.cs" />
+    <Compile Include="Entities\CrashCallType.cs" />
+    <Compile Include="Log\ConsoleLog.cs" />
+    <Compile Include="Log\Logger.cs" />
+    <Compile Include="Packets\CInPacket.cs" />
+    <Compile Include="Packets\COutPacket.cs" />
+    <Compile Include="Network\CClientSocket.cs" />
+    <Compile Include="Packets\OpCodes.cs" />
+    <Compile Include="Network\CAcceptor.cs" />
+    <Compile Include="Network\CSockHelp.cs" />
+    <Compile Include="Packets\CPacket.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Provider\WzConstant.cs" />
+    <Compile Include="Provider\WzManager.cs" />
+    <Compile Include="Scripts\Npc\Npc9900000.cs" />
+    <Compile Include="Scripts\Npc\NpcDefault.cs" />
+    <Compile Include="Scripts\Npc\NpcDialogOptions.cs" />
+    <Compile Include="Scripts\Npc\NpcScript.cs" />
+    <Compile Include="Scripts\Npc\Query\NpcActionResult.cs" />
+    <Compile Include="Server\ServerBase.cs" />
+    <Compile Include="Server\WvsCenter.cs" />
+    <Compile Include="Server\WvsGame.cs" />
+    <Compile Include="Server\WvsLogin.cs" />
+    <Compile Include="TagPoint.cs" />
+    <Compile Include="Server\Executor.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Database\Database.csproj">
+      <Project>{dc067824-84f0-4e45-a9a3-be590995e3a2}</Project>
+      <Name>Database</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Types\CField\" />
+    <Folder Include="Types\CLogin\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
