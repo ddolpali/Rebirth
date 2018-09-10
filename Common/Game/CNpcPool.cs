@@ -81,7 +81,7 @@ namespace Common.Game
                     if (portalChildNode.Name == "type")
                         cl.Type = portalChildNode.ResolveForOrNull<string>();
                     else if (portalChildNode.Name == "id")
-                        cl.Id = portalChildNode.ResolveFor<int>() ?? 0;
+                        cl.Id = Int32.Parse(portalChildNode.ResolveForOrNull<string>());
                     else if (portalChildNode.Name == "fh")
                         cl.Foothold = portalChildNode.ResolveFor<int>() ?? 0;
                     else if (portalChildNode.Name == "x")

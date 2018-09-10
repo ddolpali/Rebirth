@@ -58,13 +58,13 @@ namespace Common.Game
                     else if (portalChildNode.Name == "pt")
                         p.nType = portalChildNode.ResolveFor<int>() ?? 0;
                     else if (portalChildNode.Name == "tm")
-                        p.nTMap = portalChildNode.ResolveFor<short>() ?? 0;
+                        p.nTMap = portalChildNode.ResolveFor<int>() ?? 0;
                     else if (portalChildNode.Name == "tn")
                         p.sTName = portalChildNode.ResolveForOrNull<string>();
                     else if (portalChildNode.Name == "x")
-                        p.ptPos.X = portalChildNode.ResolveFor<short>() ?? 0;
+                        p.ptPos.X = (short)(portalChildNode.ResolveFor<int>() ?? 0);
                     else if (portalChildNode.Name == "y")
-                        p.ptPos.Y = portalChildNode.ResolveFor<short>() ?? 0;
+                        p.ptPos.Y = (short)(portalChildNode.ResolveFor<int>() ?? 0);
                 }
 
                 Portals.Add(p);
