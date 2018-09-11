@@ -1,31 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Common.Game;
+using Common.Log;
 using Common.Packets;
+using Common.Types;
+using MongoDB.Bson;
 
 namespace Common.Entities
 {
+    /// <summary>
+    /// Mongo Class
+    ///
+    /// Be cautiaus of all public members
+    /// And initializing them in the ctor
+    /// </summary>
     public sealed class CharacterData
     {
+        public ObjectId Id { get; set; }
+        public int CharId { get; set; }
+        public int AccId { get; set; }
         public AvatarLook Look { get; set; }
         public MapPos Position { get; set; }
-        
-        //----------
-
-        public GW_CharacterStat Stats { get; set; } //characterStat
-
-        public CInventory<short, GW_ItemSlotEquip> aInvEquippedNormal { get; }
-        public CInventory<short, GW_ItemSlotEquip> aInvEquippedCash { get; }
-        public CInventory<short, GW_ItemSlotEquip> aInvEquip { get; }
-        public CInventory<short, GW_ItemSlotEquip> aInvEquippedExt { get; }
-        public CInventory<short, GW_ItemSlotEquip> aInvEquippedUnk { get; }
-        public CInventory<byte, GW_ItemSlotBundle> aInvConsume { get; }
-        public CInventory<byte, GW_ItemSlotBundle> aInvInstall { get; }
-        public CInventory<byte, GW_ItemSlotBundle> aInvEtc { get; }
-        public CInventory<byte, GW_ItemSlotBundle> aInvCash { get; }
+        public GW_CharacterStat Stats { get; set; }
+        //--------------------------------------------------------------------------------------
+        public CInventory<short, GW_ItemSlotEquip> aInvEquippedNormal { get; set; }
+        public CInventory<short, GW_ItemSlotEquip> aInvEquippedCash { get; set; }
+        public CInventory<short, GW_ItemSlotEquip> aInvEquip { get; set; }
+        public CInventory<short, GW_ItemSlotEquip> aInvEquippedExt { get; set; }
+        public CInventory<short, GW_ItemSlotEquip> aInvEquippedUnk { get; set; }
+        public CInventory<byte, GW_ItemSlotBundle> aInvConsume { get; set; }
+        public CInventory<byte, GW_ItemSlotBundle> aInvInstall { get; set; }
+        public CInventory<byte, GW_ItemSlotBundle> aInvEtc { get; set; }
+        public CInventory<byte, GW_ItemSlotBundle> aInvCash { get; set; }
 
         //ZRef<GW_ItemSlotBase> aEquipped[60];
         //ZRef<GW_ItemSlotBase> aEquipped2[60];
@@ -49,8 +56,8 @@ namespace Common.Entities
         //ZList<GW_FriendRecord> lFriendRecord;
         //ZList<GW_NewYearCardRecord> lNewYearCardRecord;
         //ZList<GW_MarriageRecord> lMarriageRecord;
-        public int[] adwMapTransfer { get; private set; }
-        public int[] adwMapTransferEx { get; private set; }
+        public int[] adwMapTransfer { get; set; }
+        public int[] adwMapTransferEx { get; set; }
         //int bReachMaxLevel;
         //_FILETIME ftReachMaxLevelTime;
         //int nItemTotalNumber[5];
@@ -71,12 +78,11 @@ namespace Common.Entities
         //ZMap<ZXString<char>, ZPair<long, long>, ZXString<char>> aUpgradeCountByDamageTheme;
         //ZMap<long, long, long> m_mVisitorQuestLog;
 
-        private CharacterData()
+        public CharacterData()
         {
-            // Stats = new GW_CharacterStat();
-
-            adwMapTransfer = new int[5];
-            adwMapTransferEx = new int[10];
+            Look = new AvatarLook();
+            Position = new MapPos();
+            Stats = new GW_CharacterStat();
 
             aInvEquippedNormal = new CInventory<short, GW_ItemSlotEquip>();
             aInvEquippedCash = new CInventory<short, GW_ItemSlotEquip>();
@@ -87,43 +93,23 @@ namespace Common.Entities
             aInvInstall = new CInventory<byte, GW_ItemSlotBundle>();
             aInvEtc = new CInventory<byte, GW_ItemSlotBundle>();
             aInvCash = new CInventory<byte, GW_ItemSlotBundle>();
+
+            adwMapTransfer = new int[5];
+            adwMapTransferEx = new int[10];
         }
 
-        public static CharacterData Create(GW_CharacterStat stats, AvatarLook look)
+        public CharacterData(int charId,int accId) : this()
         {
-            var x = new CharacterData
-            {
-                Stats = stats,
-                Look = look,
-                Position = new MapPos()
-            };
-
-            //----------
-
-            var v1 = new GW_ItemSlotBundle
-            {
-                nItemID = 2000007,
-                nNumber = 5
-            };
-
-            var v2 = new GW_ItemSlotBundle
-            {
-                nItemID = 2000010,
-                nNumber = 500
-            };
-
-            x.aInvConsume.Add(1, v1);
-            x.aInvConsume.Add(2, v2);
-
-            return x;
+            CharId = charId;
+            AccId = accId;
         }
 
         //CharacterData::Decode
         public void Encode(COutPacket p)
         {
-            //TODO: Clean this packet up and make it 
+            //TODO: Clean this packet up and make it
             //cool with the flags at bottom of file
-            const long dbcharFlag = -1;
+            const long dbcharFlag = -1; //DBCHAR_FLAGS.ALL
 
             p.Encode8(dbcharFlag);
             p.Encode1((byte)nCombatOrders);
@@ -149,79 +135,92 @@ namespace Common.Entities
             Stats.EncodeMoney(p);
             //}
 
-            AddInventoryInfo(p);
-            AddSkillInfo(p);
-            AddQuestInfo(p);
-            AddMiniGameInfo(p);
-            AddRingInfo(p);
-            AddTeleportInfo(p);
-            AddMonsterBookInfo(p);
-            AddNewYearInfo(p); // Short 
-            AddAreaInfo(p); // Short 
+            EncodeInventoryInfo(p);
+            EncodeSkillInfo(p);
+            EncodeQuestInfo(p);
+            EncodeMiniGameInfo(p);
+            EncodeRingInfo(p);
+            EncodeTeleportInfo(p);
+            EncodeMonsterBookInfo(p);
+            EncodeNewYearInfo(p); // Short
+            EncodeAreaInfo(p); // Short
             p.Encode2(0);
             p.Encode2(0); //m_mVisitorQuestLog
         }
+        private void EncodeInventoryInfo(COutPacket p)
+        {
+            p.Encode1(aInvEquip.SlotLimit);
+            p.Encode1(aInvConsume.SlotLimit);
+            p.Encode1(aInvInstall.SlotLimit);
+            p.Encode1(aInvEtc.SlotLimit);
+            p.Encode1(aInvCash.SlotLimit);
 
-        private void AddAreaInfo(COutPacket p)
-        {
-            p.Encode2(0);
-        }
-        private void AddNewYearInfo(COutPacket p)
-        {
-            p.Encode2(0);
-        }
-        private void AddMonsterBookInfo(COutPacket p)
-        {
-            p.Encode4(nMonsterBookCoverID);//mplew.writeInt(chr.getMonsterBookCover()); // cover
-            p.Encode1(0);//mplew.write(0);
-            //Map<Integer, Integer> cards = chr.getMonsterBook().getCards();
-            p.Encode2(0);//mplew.writeShort(cards.size());
-            //for (Entry<Integer, Integer> all : cards.entrySet())
-            //{
-            //    mplew.writeShort(all.getKey() % 10000); // Id
-            //    mplew.write(all.getValue()); // Level
-            //}
-        }
-        private void AddTeleportInfo(COutPacket p)
-        {
-            for (int i = 0; i < adwMapTransfer.Length; i++)
-                p.Encode4(adwMapTransfer[i]);
+            p.Encode8(Constants.PERMANENT); //EQUIPEXTEXPIRE
 
-            for (int i = 0; i < adwMapTransferEx.Length; i++)
-                p.Encode4(adwMapTransferEx[i]);
-        }
-        private void AddRingInfo(COutPacket p)
-        {
-            p.Encode2(0); //getCrushRings
-            p.Encode2(0); //getFriendshipRings
-            p.Encode2(0); //getMarriageRing
-        }
-        private void AddMiniGameInfo(COutPacket p)
-        {
+            foreach (var i in aInvEquippedNormal)
+            {
+                p.Encode2(Math.Abs(i.Key));
+                i.Value.RawEncode(p);
+            }
             p.Encode2(0);
+
+            foreach (var i in aInvEquippedCash)
+            {
+                p.Encode2(Math.Abs(i.Key));
+                i.Value.RawEncode(p);
+            }
+            p.Encode2(0);
+
+            foreach (var i in aInvEquip)
+            {
+                p.Encode2(Math.Abs(i.Key));
+                i.Value.RawEncode(p);
+            }
+            p.Encode2(0);
+
+            foreach (var i in aInvEquippedExt)
+            {
+                p.Encode2(Math.Abs(i.Key));
+                i.Value.RawEncode(p);
+            }
+            p.Encode2(0);
+
+            foreach (var i in aInvEquippedUnk)
+            {
+                p.Encode2(Math.Abs(i.Key));
+                i.Value.RawEncode(p);
+            }
+            p.Encode2(0);
+
+            foreach (var i in aInvConsume)
+            {
+                p.Encode1(i.Key);
+                i.Value.RawEncode(p);
+            }
+            p.Encode1(0);
+
+            foreach (var i in aInvInstall)
+            {
+                p.Encode1(i.Key);
+                i.Value.RawEncode(p);
+            }
+            p.Encode1(0);
+
+            foreach (var i in aInvEtc)
+            {
+                p.Encode1(i.Key);
+                i.Value.RawEncode(p);
+            }
+            p.Encode1(0);
+
+            foreach (var i in aInvCash)
+            {
+                p.Encode1(i.Key);
+                i.Value.RawEncode(p);
+            }
+            p.Encode1(0);
         }
-        private void AddQuestInfo(COutPacket p)
-        {
-            p.Encode2(0);//mplew.writeShort(chr.getStartedQuestsSize());
-            //for (MapleQuestStatus q : chr.getStartedQuests())
-            //{
-            //    mplew.writeShort(q.getQuest().getId());
-            //    mplew.writeMapleAsciiString(q.getQuestData());
-            //    if (q.getQuest().getInfoNumber() > 0)
-            //    {
-            //        mplew.writeShort(q.getQuest().getInfoNumber());
-            //        mplew.writeMapleAsciiString(q.getQuestData());
-            //    }
-            //}
-            //List<MapleQuestStatus> completed = chr.getCompletedQuests();
-            //mplew.writeShort(completed.size());
-            p.Encode2(0);//for (MapleQuestStatus q : completed)
-            //{
-            //    mplew.writeShort(q.getQuest().getId());
-            //    mplew.writeLong(getTime(q.getCompletionTime()));
-            //}
-        }
-        private void AddSkillInfo(COutPacket p)
+        private void EncodeSkillInfo(COutPacket p)
         {
             //Map<Skill, MapleCharacter.SkillEntry> skills = chr.getSkills();
             //int skillsSize = skills.size();
@@ -258,116 +257,64 @@ namespace Common.Entities
             //    mplew.writeShort(timeLeft / 1000);
             //}
         }
-        private void AddInventoryInfo(COutPacket p)
+        private void EncodeQuestInfo(COutPacket p)
         {
-            //EQUIP, CONSUME, INSTALL, ETC, CASH
-            
-            p.Encode1(aInvEquip.SlotLimit);
-            p.Encode1(aInvConsume.SlotLimit);
-            p.Encode1(aInvInstall.SlotLimit);
-            p.Encode1(aInvEtc.SlotLimit);
-            p.Encode1(aInvCash.SlotLimit);
-            
-            p.Encode8(Constants.PERMANENT); //EQUIPEXTEXPIRE 
-
-            foreach (var i in aInvEquippedNormal)
-            {
-                p.Encode2(i.Key);
-                i.Value.RawEncode(p);
-            }
+            p.Encode2(0);//mplew.writeShort(chr.getStartedQuestsSize());
+            //for (MapleQuestStatus q : chr.getStartedQuests())
+            //{
+            //    mplew.writeShort(q.getQuest().getId());
+            //    mplew.writeMapleAsciiString(q.getQuestData());
+            //    if (q.getQuest().getInfoNumber() > 0)
+            //    {
+            //        mplew.writeShort(q.getQuest().getInfoNumber());
+            //        mplew.writeMapleAsciiString(q.getQuestData());
+            //    }
+            //}
+            //List<MapleQuestStatus> completed = chr.getCompletedQuests();
+            //mplew.writeShort(completed.size());
+            p.Encode2(0);//for (MapleQuestStatus q : completed)
+            //{
+            //    mplew.writeShort(q.getQuest().getId());
+            //    mplew.writeLong(getTime(q.getCompletionTime()));
+            //}
+        }
+        private void EncodeMiniGameInfo(COutPacket p)
+        {
             p.Encode2(0);
+        }
+        public void EncodeRingInfo(COutPacket p)
+        {
+            p.Encode2(0); //getCrushRings
+            p.Encode2(0); //getFriendshipRings
+            p.Encode2(0); //getMarriageRing
+        }
+        private void EncodeTeleportInfo(COutPacket p)
+        {
+            for (int i = 0; i < adwMapTransfer.Length; i++)
+                p.Encode4(adwMapTransfer[i]);
 
-            foreach (var i in aInvEquippedCash)
-            {
-                p.Encode2(i.Key);
-                i.Value.RawEncode(p);
-            }
+            for (int i = 0; i < adwMapTransferEx.Length; i++)
+                p.Encode4(adwMapTransferEx[i]);
+        }
+        private void EncodeMonsterBookInfo(COutPacket p)
+        {
+            p.Encode4(nMonsterBookCoverID);//mplew.writeInt(chr.getMonsterBookCover()); // cover
+            p.Encode1(0);//mplew.write(0);
+            //Map<Integer, Integer> cards = chr.getMonsterBook().getCards();
+            p.Encode2(0);//mplew.writeShort(cards.size());
+            //for (Entry<Integer, Integer> all : cards.entrySet())
+            //{
+            //    mplew.writeShort(all.getKey() % 10000); // Id
+            //    mplew.write(all.getValue()); // Level
+            //}
+        }
+        private void EncodeNewYearInfo(COutPacket p)
+        {
             p.Encode2(0);
-
-            foreach (var i in aInvEquip)
-            {
-                p.Encode2(i.Key);
-                i.Value.RawEncode(p);
-            }
+        }
+        private void EncodeAreaInfo(COutPacket p)
+        {
             p.Encode2(0);
-
-            foreach (var i in aInvEquippedExt)
-            {
-                p.Encode2(i.Key);
-                i.Value.RawEncode(p);
-            }
-            p.Encode2(0);
-
-            foreach (var i in aInvEquippedUnk)
-            {
-                p.Encode2(i.Key);
-                i.Value.RawEncode(p);
-            }
-            p.Encode2(0);
-
-            foreach (var i in aInvConsume)
-            {
-                p.Encode1(i.Key);
-                i.Value.RawEncode(p);
-            }
-            p.Encode1(0);
-
-            foreach (var i in aInvInstall)
-            {
-                p.Encode1(i.Key);
-                i.Value.RawEncode(p);
-            }
-            p.Encode1(0);
-
-            foreach (var i in aInvEtc)
-            {
-                p.Encode1(i.Key);
-                i.Value.RawEncode(p);
-            }
-            p.Encode1(0);
-
-            foreach (var i in aInvCash)
-            {
-                p.Encode1(i.Key);
-                i.Value.RawEncode(p);
-            }
-            p.Encode1(0);
         }
     }
-
-    /* 466 */
-    enum DBCHAR_FLAGS
-    {
-        DBCHAR_CHARACTER = 0x1,
-        DBCHAR_MONEY = 0x2,
-        DBCHAR_ITEMSLOTEQUIP = 0x4,
-        DBCHAR_ITEMSLOTCONSUME = 0x8,
-        DBCHAR_ITEMSLOTINSTALL = 0x10,
-        DBCHAR_ITEMSLOTETC = 0x20,
-        DBCHAR_ITEMSLOTCASH = 0x40,
-        DBCHAR_INVENTORYSIZE = 0x80,
-        DBCHAR_SKILLRECORD = 0x100,
-        DBCHAR_QUESTRECORD = 0x200,
-        DBCHAR_MINIGAMERECORD = 0x400,
-        DBCHAR_COUPLERECORD = 0x800,
-        DBCHAR_MAPTRANSFER = 0x1000,
-        DBCHAR_AVATAR = 0x2000,
-        DBCHAR_QUESTCOMPLETE = 0x4000,
-        DBCHAR_SKILLCOOLTIME = 0x8000,
-        DBCHAR_MONSTERBOOKCARD = 0x10000,
-        DBCHAR_MONSTERBOOKCOVER = 0x20000,
-        DBCHAR_NEWYEARCARD = 0x40000,
-        DBCHAR_QUESTRECORDEX = 0x80000,
-        DBCHAR_ADMINSHOPCOUNT = 0x100000,
-        DBCHAR_EQUIPEXT = 0x100000,
-        DBCHAR_WILDHUNTERINFO = 0x200000,
-        DBCHAR_QUESTCOMPLETE_OLD = 0x400000,
-        DBCHAR_VISITORLOG = 0x800000,
-        DBCHAR_VISITORLOG1 = 0x1000000,
-        DBCHAR_VISITORLOG2 = 0x2000000,
-        DBCHAR_VISITORLOG3 = 0x4000000,
-        DBCHAR_VISITORLOG4 = 0x8000000,
-        //DBCHAR_ALL = 0xFFFFFFFF,
-        DBCHAR_ITEMSLOT = 0x7C,
-    };
 }

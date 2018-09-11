@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Common.Log;
 using Common.Network;
 using Common.Packets;
 
 namespace Common.Client
 {
-    //TODO: Gotta make this guy and his parent disposable
+    //TODO: Gotta make this guy and his child* disposable
     public abstract class ClientBase
     {
         private readonly CClientSocket m_socket;
 
         public string Host => m_socket.Host;
+
+        public bool LoggedIn { get; protected set; }
 
         public byte ServerId { get; set; }
         public byte ChannelId { get; set; }

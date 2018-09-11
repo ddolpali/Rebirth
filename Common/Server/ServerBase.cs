@@ -1,27 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Sockets;
 using Common.Client;
 using Common.Log;
 using Common.Network;
 using Common.Packets;
+using Common.Threading;
+using MongoDB.Driver;
 
 namespace Common.Server
 {
-    public class ServerBase<TClient> where TClient : ClientBase
+    public abstract class ServerBase<TClient> where TClient : ClientBase
     {
         private readonly string m_name;
         private readonly WvsCenter m_center;
         private readonly Executor m_thread;
         private readonly CAcceptor m_acceptor;
 
-        public bool LogPackets { get; set; } = true;
-
         //Implement later
         //private bool m_running;
 
         public string Name => m_name;
         public WvsCenter ParentServer => m_center;
+        public IMongoDatabase Db => m_center.Db.Get();
 
         public ServerBase(string name, int port,WvsCenter parent)
         {
@@ -63,10 +63,7 @@ namespace Common.Server
             Logger.Write(LogLevel.Info, "[{0}] Disconnected {1}", Name, client.Host);
         }
 
-        protected virtual TClient CreateClient(CClientSocket socket)
-        {
-            throw new InvalidOperationException();
-        }
+        protected abstract TClient CreateClient(CClientSocket socket);
 
         public void Start()
         {

@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LuaEngine", "LuaEngine\LuaE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PKG1", "PKG1\PKG1.csproj", "{7F3011AE-FFF7-442C-A805-F547EC94696A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WZData", "WZData\WZData.csproj", "{8E7FFB40-5935-44CE-9BF8-D3FF1EE6086C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Database.csproj", "{8FF8663A-A895-4549-9DB8-C1A76BDF01E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +37,10 @@ Global
 		{7F3011AE-FFF7-442C-A805-F547EC94696A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F3011AE-FFF7-442C-A805-F547EC94696A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F3011AE-FFF7-442C-A805-F547EC94696A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8E7FFB40-5935-44CE-9BF8-D3FF1EE6086C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E7FFB40-5935-44CE-9BF8-D3FF1EE6086C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E7FFB40-5935-44CE-9BF8-D3FF1EE6086C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E7FFB40-5935-44CE-9BF8-D3FF1EE6086C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FF8663A-A895-4549-9DB8-C1A76BDF01E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FF8663A-A895-4549-9DB8-C1A76BDF01E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FF8663A-A895-4549-9DB8-C1A76BDF01E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FF8663A-A895-4549-9DB8-C1A76BDF01E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
