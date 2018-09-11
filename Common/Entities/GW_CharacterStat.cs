@@ -1,9 +1,14 @@
-﻿// ReSharper disable InconsistentNaming
-
-using Common.Packets;
+﻿using Common.Packets;
+using Common.Types;
 
 namespace Common.Entities
 {
+    /// <summary>
+    /// Mongo Class
+    /// 
+    /// Be cautiaus of all public members
+    /// And initializing them in the ctor
+    /// </summary>
     public class GW_CharacterStat
     {
         public GW_CharacterStat()
@@ -11,7 +16,7 @@ namespace Common.Entities
             aliPetLockerSN = new long[3];
             extendSP = new ExtendSP();
         }
-
+        
         public int dwCharacterID;
         public string sCharacterName;
         public byte nGender;
@@ -21,7 +26,6 @@ namespace Common.Entities
         public long[] aliPetLockerSN;
         public byte nLevel;
         public short nJob;
-
         public short nSTR;
         public short nDEX;
         public short nINT;
@@ -30,17 +34,13 @@ namespace Common.Entities
         public int nMHP;
         public int nMP;
         public int nMMP;
-
         public short nAP;
         public short nSP;
-
         public int nEXP;
         public short nPOP;
         public int nMoney;
         public int nTempEXP;
-
         public ExtendSP extendSP;
-
         public int dwPosMap;
         public byte nPortal;
         //public int nCheckSum;             //Not sure where this is used
@@ -71,18 +71,18 @@ namespace Common.Entities
             p.Encode4(nMP);
             p.Encode4(nMMP);
             p.Encode2(nAP);
-            
+
             if (Constants.IsNotExtendedSp(nJob))
                 p.Encode2(nSP);
             else
                 extendSP.Encode(p);
-            
-            p.Encode4(nEXP); 
-            p.Encode2(nPOP); 
+
+            p.Encode4(nEXP);
+            p.Encode2(nPOP);
             p.Encode4(nTempEXP); //Gachapon
             p.Encode4(dwPosMap);
-            p.Encode1(nPortal); 
-            p.Encode4(nPlaytime); 
+            p.Encode1(nPortal);
+            p.Encode4(nPlaytime);
             p.Encode2(nSubJob); //Here for dual blade?
         }
         public void EncodeMoney(COutPacket p)

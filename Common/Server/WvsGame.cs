@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Common.Client;
+using Common.Entities;
 using Common.Game;
 using Common.Log;
 using Common.Network;
 using Common.Packets;
 using Common.Scripts.Npc;
+using MongoDB.Driver;
 
 namespace Common.Server
 {
@@ -35,6 +36,15 @@ namespace Common.Server
 
             return CFieldMan[id];
         }
+        public CharacterData LoadCharacter(int charId)
+        {
+            var db = ParentServer.Db.Get();
+
+            return db
+                .GetCollection<CharacterData>("character_data")
+                .FindSync(x => x.CharId == charId)
+                .First();
+        }
         //-----------------------------------------------------------------------------
         protected override WvsGameClient CreateClient(CClientSocket socket)
         {
@@ -43,13 +53,12 @@ namespace Common.Server
                 ChannelId = ChannelId,
             };
         }
-
         protected override void HandlePacket(WvsGameClient socket, CInPacket packet)
         {
             base.HandlePacket(socket, packet);
             var opcode = (RecvOps)packet.Decode2();
 
-            if (socket.Initialized)
+            if (socket.LoggedIn)
             {
                 switch (opcode)
                 {
@@ -77,7 +86,9 @@ namespace Common.Server
                     case RecvOps.CP_UserCharacterInfoRequest:
                         Handle_UserCharacterInfoRequest(socket, packet);
                         break;
-                        
+                    case RecvOps.CP_UserChangeSlotPositionRequest:
+                        Handle_UserChangeSlotPositionRequest(socket, packet);
+                        break;
                     case RecvOps.CP_MobMove:
                         Handle_MobMove(socket, packet);
                         break;
@@ -105,9 +116,17 @@ namespace Common.Server
 
             client.SentCharData = false;
 
-            if (client.Initialized)
+            if (client.LoggedIn)
             {
+                var character = client.Character;
+
                 client.GetCharField().Remove(client);
+                
+                //Save to db
+                Db.GetCollection<CharacterData>("character_data")
+                    .FindOneAndReplace(x => x.CharId == character.CharId, character);
+
+                ParentServer.LoggedIn.RemoveAll(x => x.CharId == character.CharId);
             }
         }
         //-----------------------------------------------------------------------------
@@ -115,14 +134,26 @@ namespace Common.Server
         {
             var uid = p.Decode4();
 
-            c.LoadCharacter(uid);
+            var req = ParentServer.LoggedIn.FirstOrDefault(x => x.CharId == uid);
 
-            var character = c.Character;
-            character.Stats.dwCharacterID = Constants.GetUniqueId(); //AGAIN
+            if (req == null || req.Migrated ||(DateTime.Now - req.Requested).TotalSeconds >= Constants.MigrateTimeoutSec)
+            {
+                ParentServer.LoggedIn.Remove(req);
+                c.Disconnect();
+            }
+            else
+            {
+                req.Migrated = true;
 
-            GetField(character.Stats.dwPosMap).Add(c);
+                c.Load(uid);
 
-            c.SendPacket(CPacket.BroadcastServerMsg(Constants.ServerMessage));
+                var character = c.Character;
+
+                GetField(character.Stats.dwPosMap).Add(c);
+
+                c.SendPacket(CPacket.BroadcastServerMsg(Constants.ServerMessage));
+            }
+
         }
         private void Handle_UserChat(WvsGameClient c, CInPacket p)
         {
@@ -133,12 +164,13 @@ namespace Common.Server
             if (msg.StartsWith("!"))
             {
                 var split = msg.Split(' ');
+                split[0] = split[0].Remove(0, 1);
+
                 c.HandleCommand(split);
             }
             else
             {
-                var stats = c.Character.Stats;
-                c.GetCharField().Broadcast(CPacket.UserChat(stats.dwCharacterID, msg, true, show));
+                c.GetCharField().Broadcast(CPacket.UserChat(c.Character.CharId, msg, true, show));
             }
         }
         private void Handle_UserMove(WvsGameClient c, CInPacket p)
@@ -152,10 +184,8 @@ namespace Common.Server
 
             var movePath = p.DecodeBuffer(p.Available);
             c.Character.Position.DecodeMovePath(movePath);
-
-            var stats = c.Character.Stats;
-
-            c.GetCharField().Broadcast(CPacket.UserMovement(stats.dwCharacterID, movePath), c);
+            
+            c.GetCharField().Broadcast(CPacket.UserMovement(c.Character.CharId, movePath), c);
         }
         private void Handle_UserTransferFieldRequest(WvsGameClient c, CInPacket p)
         {
@@ -201,10 +231,8 @@ namespace Common.Server
             //    int emoteid = 5159992 + emote;
             //    //TODO: As if i care check if the emote is in CS inventory, if not return
             //}
-
-            var stats = c.Character.Stats;
-
-            c.GetCharField().Broadcast(CPacket.UserEmoticon(stats.dwCharacterID, nEmotion, nDuration, bByItemOption), c);
+            
+            c.GetCharField().Broadcast(CPacket.UserEmoticon(c.Character.CharId, nEmotion, nDuration, bByItemOption), c);
         }
         private void Handle_UserHit(WvsGameClient c, CInPacket p)
         {
@@ -267,7 +295,7 @@ namespace Common.Server
 
                 var direction = p.Decode1();
             }
-            
+
 
         }
         private void Handle_UserSelectNpc(WvsGameClient c, CInPacket p)
@@ -292,13 +320,11 @@ namespace Common.Server
                 //    npc.sendShop(c);
                 //}
                 //else
-                //{
-                //    NPCScriptManager.getInstance().start(c, npc.getId());
-                //}5
+                {
 
-
-                c.NpcScript = Constants.GetScript(npc.Id, c);
-                c.NpcScript.Execute();
+                    c.NpcScript = NpcScript.GetScript(npc.Id, c);
+                    c.NpcScript.Execute();
+                }
             }
             else
             {
@@ -476,8 +502,6 @@ namespace Common.Server
             c.GetCharField().Broadcast(mobMove, c);
 
         }
-
-
         private void Handle_UserCharacterInfoRequest(WvsGameClient c, CInPacket p)
         {
             var tick = p.Decode4();
@@ -486,7 +510,32 @@ namespace Common.Server
 
 
         }
+        private void Handle_UserChangeSlotPositionRequest(WvsGameClient c, CInPacket p)
+        {
+            var tick = p.Decode4();
+            var type = p.Decode1(); // inventory
+            var src = p.Decode2();
+            var dst = p.Decode2();
+            var quantity = p.Decode2();
 
-
+            Logger.Write(LogLevel.Debug, "UserChangeSlotPositionRequest Src {0}, Dst {1} Type {2} Qty {3}", src, dst, type, quantity);
+            
+            if (src < 0 && dst > 0)
+            {
+                CInventoryManipulator.UnEquip(c, src, dst); //check
+            }
+            else if (dst < 0)
+            {
+                CInventoryManipulator.Equip(c, src, dst); //check
+            }
+            else if (dst == 0)
+            {
+                CInventoryManipulator.Drop(c, type, src, quantity);
+            }
+            else
+            {
+                CInventoryManipulator.Move(c, type, src, dst); //check
+            }
+        }
     }
 }
